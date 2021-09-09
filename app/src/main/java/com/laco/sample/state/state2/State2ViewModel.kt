@@ -2,7 +2,6 @@ package com.laco.sample.state.state2
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.laco.sample.state.data.User
 import com.laco.sample.state.data.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +22,8 @@ class State2ViewModel @Inject constructor(
             val age: String
         ) : State()
 
+        object Empty : State()
+
         object Failure : State()
 
         object Loading : State()
@@ -38,7 +39,12 @@ class State2ViewModel @Inject constructor(
             val result = userRepository.getUser()
             result
                 .onSuccess { user ->
-                    _state.value = State.Success(user.name, user.age.toString())
+                    val (name, age) = (user.name to user.age.toString())
+                    if (name.isEmpty() && age.isEmpty()) {
+                        _state.value = State.Empty
+                    } else {
+                        _state.value = State.Success(user.name, user.age.toString())
+                    }
                 }
                 .onFailure {
                     _state.value = State.Failure
